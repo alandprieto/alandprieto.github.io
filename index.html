@@ -9,6 +9,7 @@
     --bg: #14171c;
     --bg-raised: #1b1f26;
     --line: #272c34;
+    --line-hi: #3a424e;
     --text: #d8dee4;
     --text-dim: #838d99;
     --accent: #e8a33d;
@@ -25,19 +26,20 @@
     line-height: 1.6;
   }
 
-  code, .mono, h1, h2, h3, .tag, nav a, .prompt{
+  code, .mono, h1, h2, h3, .tag, nav a, .prompt, .gallery-close{
     font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
   }
 
   a{ color: var(--accent-dim); text-decoration: none; }
   a:hover{ text-decoration: underline; }
 
-  .wrap{ max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  :focus-visible{ outline: 2px solid var(--accent); outline-offset: 3px; }
 
-  nav{
-    border-bottom: 1px solid var(--line);
-    padding: 18px 0;
-  }
+  .wrap{ max-width: 760px; margin: 0 auto; padding: 0 24px; }
+  /* La sección de proyectos necesita más ancho para la galería */
+  .wrap-wide{ max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+
+  nav{ border-bottom: 1px solid var(--line); padding: 18px 0; }
   nav .wrap{ display:flex; justify-content: space-between; align-items:center; }
   nav .links a{ margin-left: 20px; color: var(--text-dim); font-size: 14px; }
   nav .links a:hover{ color: var(--accent); }
@@ -52,84 +54,133 @@
   }
   @keyframes blink{ 50%{ opacity:0; } }
 
-  h1{
-    font-size: 40px;
-    font-weight: 600;
-    margin: 0 0 12px;
-    letter-spacing: -0.5px;
-  }
+  h1{ font-size: 40px; font-weight: 600; margin: 0 0 12px; letter-spacing: -0.5px; }
   h1 span{ color: var(--accent); }
-
   .role{ color: var(--text-dim); font-size: 17px; max-width: 520px; }
 
   section{ padding: 54px 0; border-top: 1px solid var(--line); }
 
-  h2{
-    font-size: 13px;
-    color: var(--text-dim);
-    font-weight: 500;
-    margin: 0 0 28px;
-  }
+  h2{ font-size: 13px; color: var(--text-dim); font-weight: 500; margin: 0 0 28px; }
   h2 .idx{ color: var(--accent-dim); }
 
   /* Stack */
-  .stack-grid{
-    display:grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px,1fr));
-    gap: 22px;
-  }
-  .stack-group h3{
-    font-size: 13px; color: var(--text); margin: 0 0 8px; font-weight: 500;
-  }
+  .stack-grid{ display:grid; grid-template-columns: repeat(auto-fit, minmax(150px,1fr)); gap: 22px; }
+  .stack-group h3{ font-size: 13px; color: var(--text); margin: 0 0 8px; font-weight: 500; }
   .stack-group p{ margin:0; color: var(--text-dim); font-size: 14px; }
 
-  /* Projects */
+  /* ---------- Proyectos + galería ---------- */
+  .shell{
+    display: grid;
+    grid-template-columns: 1fr 0fr;
+    gap: 0;
+    transition: grid-template-columns .45s ease, gap .45s ease;
+  }
+  .shell.open{
+    grid-template-columns: 300px 1fr;
+    gap: 34px;
+  }
+
+  .project-list{ min-width: 0; }
+
   .project{
     display: grid;
-    grid-template-columns: 240px 1fr;
-    gap: 26px;
-    padding: 26px 0;
+    grid-template-columns: 200px 1fr;
+    gap: 24px;
+    padding: 22px 0;
     border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    position: relative;
+    transition: grid-template-columns .45s ease, gap .45s ease;
   }
-  .project:last-child{ border-bottom: none; }
+  .project:last-of-type{ border-bottom: none; }
+  .project:hover h3{ color: var(--accent); }
 
-  .media{
+  .shell.open .project{
+    grid-template-columns: 1fr;
+    gap: 0;
+    padding: 16px 0;
+  }
+  .shell.open .thumb,
+  .shell.open .desc,
+  .shell.open .project-links{
+    display: none;
+  }
+  .project.active h3{ color: var(--accent); }
+  .shell.open .project.active::before{
+    content: "";
+    position: absolute;
+    left: -14px; top: 14px; bottom: 14px;
+    width: 2px; background: var(--accent);
+  }
+
+  .thumb{
     background: var(--bg-raised);
     border: 1px solid var(--line);
     border-radius: 4px;
     aspect-ratio: 4/3;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    color: var(--text-dim);
-    font-size: 12px;
-    text-align:center;
-    padding: 10px;
+    display:flex; align-items:center; justify-content:center;
+    color: var(--text-dim); font-size: 12px; text-align:center; padding: 10px;
     overflow: hidden;
   }
-  .media img, .media video{
-    width:100%; height:100%; object-fit: cover;
-  }
+  .thumb img, .thumb video{ width:100%; height:100%; object-fit: cover; }
 
-  .project-body h3{
-    font-size: 17px; margin: 0 0 6px; color: var(--text); font-weight: 600;
-  }
-  .project-body p.desc{
-    color: var(--text-dim); font-size: 14.5px; margin: 0 0 14px;
-  }
-  .tags{ margin-bottom: 14px; }
+  .project-body h3{ font-size: 17px; margin: 0 0 6px; color: var(--text); font-weight: 600; transition: color .2s; }
+  .project-body p.desc{ color: var(--text-dim); font-size: 14.5px; margin: 0 0 14px; }
+  .tags{ margin-bottom: 12px; }
   .tag{
-    display:inline-block;
-    font-size: 11px;
-    color: var(--accent-dim);
-    border: 1px solid var(--line);
-    padding: 3px 8px;
-    border-radius: 3px;
+    display:inline-block; font-size: 11px; color: var(--accent-dim);
+    border: 1px solid var(--line); padding: 3px 8px; border-radius: 3px;
     margin: 0 6px 6px 0;
   }
-  .project-links a{ font-size: 13.5px; margin-right: 18px; }
+  .project-links a{ font-size: 13.5px; margin-right: 8px; }
+  .open-hint{ font-size: 12.5px; color: var(--text-dim); }
 
-  /* Experience */
+  /* Panel de galería */
+  .gallery{
+    min-width: 0;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .35s ease .1s, visibility .35s;
+  }
+  .shell.open .gallery{ opacity: 1; visibility: visible; }
+
+  .gallery-head{
+    display:flex; justify-content: space-between; align-items: baseline;
+    gap: 16px; padding-bottom: 14px; margin-bottom: 22px;
+    border-bottom: 1px solid var(--line-hi);
+  }
+  .gallery-head h3{ margin:0; font-size: 19px; font-weight: 600; }
+  .gallery-head .repo{ font-size: 13.5px; white-space: nowrap; }
+  .gallery-close{
+    background: none; border: 1px solid var(--line-hi); color: var(--text-dim);
+    border-radius: 3px; padding: 4px 10px; font-size: 12px; cursor: pointer;
+    margin-left: 14px;
+  }
+  .gallery-close:hover{ color: var(--accent); border-color: var(--accent); }
+
+  .gallery-items figure{ margin: 0 0 30px; }
+  .gallery-items .frame{
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    min-height: 190px;
+    display:flex; align-items:center; justify-content:center;
+    color: var(--text-dim); font-size: 12.5px; text-align:center; padding: 14px;
+    overflow: hidden;
+  }
+  .gallery-items .frame img,
+  .gallery-items .frame video{
+    width: 100%; height: auto; display: block; border-radius: 3px;
+  }
+  .gallery-items figcaption{
+    color: var(--text-dim); font-size: 14px; margin-top: 10px;
+    padding-left: 12px; border-left: 2px solid var(--line-hi);
+  }
+
+  .gallery-source{ display: none; }
+
+  /* Experiencia */
   .job{ margin-bottom: 26px; }
   .job-head{ display:flex; justify-content: space-between; flex-wrap:wrap; gap: 6px; }
   .job-head h3{ font-size: 15px; margin:0; color: var(--text); font-weight: 600; }
@@ -140,9 +191,16 @@
   footer .links a{ margin-right: 22px; }
   footer p{ color: var(--text-dim); font-size: 13px; margin-top: 24px; }
 
-  @media (max-width: 640px){
-    .project{ grid-template-columns: 1fr; }
+  /* Mobile: la galería reemplaza la lista */
+  @media (max-width: 860px){
     h1{ font-size: 32px; }
+    .project{ grid-template-columns: 1fr; }
+    .shell, .shell.open{ grid-template-columns: 1fr; gap: 0; }
+    .shell.open .project-list{ display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition: none !important; animation: none !important; }
   }
 </style>
 </head>
@@ -174,101 +232,164 @@
   <div class="wrap">
     <h2><span class="idx">01.</span> stack</h2>
     <div class="stack-grid">
-      <div class="stack-group">
-        <h3>Backend</h3>
-        <p>Python, Django, Java</p>
-      </div>
-      <div class="stack-group">
-        <h3>Frontend</h3>
-        <p>JavaScript, HTML, CSS</p>
-      </div>
-      <div class="stack-group">
-        <h3>Infraestructura</h3>
-        <p>Linux (Fedora Server), Git, n8n</p>
-      </div>
-      <div class="stack-group">
-        <h3>Datos</h3>
-        <p>SQLite, análisis y minería de datos</p>
-      </div>
+      <div class="stack-group"><h3>Backend</h3><p>Python, Django, Java</p></div>
+      <div class="stack-group"><h3>Frontend</h3><p>JavaScript, HTML, CSS</p></div>
+      <div class="stack-group"><h3>Infraestructura</h3><p>Linux (Fedora Server), Git, n8n</p></div>
+      <div class="stack-group"><h3>Datos</h3><p>SQLite, análisis y minería de datos</p></div>
     </div>
   </div>
 </section>
 
 <section id="proyectos">
-  <div class="wrap">
+  <div class="wrap-wide">
     <h2><span class="idx">02.</span> proyectos</h2>
 
-    <div class="project">
-      <div class="media">
-        <!--
-          Reemplazá este comentario por una imagen o video del proyecto, por ejemplo:
-          <img src="media/bottask-preview.png" alt="Bot funcionando en Discord">
-          <video src="media/bottask-demo.mp4" controls></video>
-        -->
-        imagen / video acá
-      </div>
-      <div class="project-body">
-        <h3>bottask-dircord</h3>
-        <p class="desc">Bot de Discord para gestión de tareas por canal, con comandos slash, autocompletado y persistencia en SQLite.</p>
-        <div class="tags">
-          <span class="tag">Python</span>
-          <span class="tag">SQLite</span>
-          <span class="tag">Discord API</span>
-        </div>
-        <div class="project-links">
-          <a href="https://github.com/alandprieto/bottask-dircord">Ver repositorio →</a>
-          <!-- <a href="TU_LINK_DEMO">Demo →</a> -->
-        </div>
-      </div>
-    </div>
+    <div class="shell" id="shell">
 
-    <div class="project">
-      <div class="media">
-        <!-- <img src="media/farma-delivery-preview.png" alt="Sistema de delivery de farmacia"> -->
-        imagen / video acá
-      </div>
-      <div class="project-body">
-        <h3>farma-delivery</h3>
-        <p class="desc">Sistema de delivery de farmacia desarrollado con Django. Proyecto de Ingeniería de Software.</p>
-        <div class="tags">
-          <span class="tag">Python</span>
-          <span class="tag">Django</span>
-        </div>
-        <div class="project-links">
-          <a href="https://github.com/alandprieto/farma-delivery">Ver repositorio →</a>
-          <!-- <a href="TU_LINK_DEMO">Demo →</a> -->
-        </div>
-      </div>
-    </div>
+      <div class="project-list">
 
-    <div class="project">
-      <div class="media">
-        <!-- <video src="media/streaming-demo.mp4" controls></video> -->
-        imagen / video acá
-      </div>
-      <div class="project-body">
-        <h3>Plataforma de Streaming</h3>
-        <p class="desc">Plataforma de streaming de escritorio en Java (Swing), arquitectura MVC + DAO, persistencia SQLite e integración con la API de OMDb. Proyecto del Taller de Lenguajes II.</p>
-        <div class="tags">
-          <span class="tag">Java</span>
-          <span class="tag">Swing</span>
-          <span class="tag">MVC / DAO</span>
-          <span class="tag">OMDb API</span>
+        <!-- ============ PROYECTO 1 ============ -->
+        <div class="project" role="button" tabindex="0" data-project="bottask">
+          <div class="thumb">
+            <!-- <img src="media/bottask-thumb.png" alt="Bot de tareas en Discord"> -->
+            imagen / video acá
+          </div>
+          <div class="project-body">
+            <h3>bottask-dircord</h3>
+            <p class="desc">Bot de Discord para gestión de tareas por canal, con comandos slash, autocompletado y persistencia en SQLite.</p>
+            <div class="tags">
+              <span class="tag">Python</span>
+              <span class="tag">SQLite</span>
+              <span class="tag">Discord API</span>
+            </div>
+            <div class="project-links">
+              <a href="https://github.com/alandprieto/bottask-dircord">Ver repositorio →</a>
+              <span class="open-hint">· clic para ver la galería</span>
+            </div>
+          </div>
         </div>
-        <div class="project-links">
-          <a href="https://github.com/alandprieto/plataforma-streaming-java">Ver repositorio →</a>
-          <!-- <a href="TU_LINK_DEMO">Demo →</a> -->
+
+        <!-- ============ PROYECTO 2 ============ -->
+        <div class="project" role="button" tabindex="0" data-project="farma">
+          <div class="thumb">
+            <!-- <img src="media/farma-thumb.png" alt="Sistema de delivery de farmacia"> -->
+            imagen / video acá
+          </div>
+          <div class="project-body">
+            <h3>farma-delivery</h3>
+            <p class="desc">Sistema de delivery de farmacia desarrollado con Django. Proyecto de Ingeniería de Software.</p>
+            <div class="tags">
+              <span class="tag">Python</span>
+              <span class="tag">Django</span>
+            </div>
+            <div class="project-links">
+              <a href="https://github.com/alandprieto/farma-delivery">Ver repositorio →</a>
+              <span class="open-hint">· clic para ver la galería</span>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
 
-    <!--
-      Para sumar un proyecto más, copiá un bloque <div class="project">...</div> entero
-      y completá media, título, descripción, tags y links.
-    -->
+        <!-- ============ PROYECTO 3 ============ -->
+        <div class="project" role="button" tabindex="0" data-project="streaming">
+          <div class="thumb">
+            <!-- <img src="media/streaming-thumb.png" alt="Plataforma de streaming en Java"> -->
+            imagen / video acá
+          </div>
+          <div class="project-body">
+            <h3>Plataforma de Streaming</h3>
+            <p class="desc">Plataforma de streaming de escritorio en Java (Swing), arquitectura MVC + DAO, persistencia SQLite e integración con la API de OMDb. Proyecto del Taller de Lenguajes II.</p>
+            <div class="tags">
+              <span class="tag">Java</span>
+              <span class="tag">Swing</span>
+              <span class="tag">MVC / DAO</span>
+              <span class="tag">OMDb API</span>
+            </div>
+            <div class="project-links">
+              <a href="https://github.com/alandprieto/plataforma-streaming-java">Ver repositorio →</a>
+              <span class="open-hint">· clic para ver la galería</span>
+            </div>
+          </div>
+        </div>
 
+      </div><!-- /project-list -->
+
+      <!-- Panel donde se arma la galería (se llena solo) -->
+      <aside class="gallery" id="gallery" aria-live="polite"></aside>
+
+    </div><!-- /shell -->
   </div>
 </section>
+
+
+<!--
+  ============================================================
+  GALERÍAS — acá va el contenido de cada proyecto.
+  Reglas:
+   - El data-gallery debe coincidir con el data-project de arriba.
+   - Cada <figure> es un ítem: adentro va la imagen o el video,
+     y abajo su descripción individual en <figcaption>.
+   - Para agregar un ítem, copiá un <figure> entero.
+  ============================================================
+-->
+
+<div class="gallery-source" data-gallery="bottask" data-title="bottask-dircord" data-repo="https://github.com/alandprieto/bottask-dircord">
+  <figure>
+    <div class="frame">
+      <!-- <img src="media/bottask/comandos.png" alt="Comandos slash del bot"> -->
+      imagen / video acá
+    </div>
+    <figcaption>Descripción de este ítem: qué se está mostrando y por qué es interesante.</figcaption>
+  </figure>
+  <figure>
+    <div class="frame">
+      <!-- <video src="media/bottask/demo.mp4" controls></video> -->
+      imagen / video acá
+    </div>
+    <figcaption>Descripción del video: el flujo que se demuestra, paso a paso.</figcaption>
+  </figure>
+  <figure>
+    <div class="frame">
+      <!-- <img src="media/bottask/db.png" alt="Esquema de la base de datos"> -->
+      imagen / video acá
+    </div>
+    <figcaption>Descripción del tercer ítem.</figcaption>
+  </figure>
+</div>
+
+<div class="gallery-source" data-gallery="farma" data-title="farma-delivery" data-repo="https://github.com/alandprieto/farma-delivery">
+  <figure>
+    <div class="frame">
+      <!-- <img src="media/farma/home.png" alt="Pantalla principal"> -->
+      imagen / video acá
+    </div>
+    <figcaption>Descripción de este ítem.</figcaption>
+  </figure>
+  <figure>
+    <div class="frame">
+      <!-- <img src="media/farma/pedido.png" alt="Flujo de pedido"> -->
+      imagen / video acá
+    </div>
+    <figcaption>Descripción de este ítem.</figcaption>
+  </figure>
+</div>
+
+<div class="gallery-source" data-gallery="streaming" data-title="Plataforma de Streaming" data-repo="https://github.com/alandprieto/plataforma-streaming-java">
+  <figure>
+    <div class="frame">
+      <!-- <img src="media/streaming/catalogo.png" alt="Catálogo de películas"> -->
+      imagen / video acá
+    </div>
+    <figcaption>Descripción de este ítem.</figcaption>
+  </figure>
+  <figure>
+    <div class="frame">
+      <!-- <video src="media/streaming/demo.mp4" controls></video> -->
+      imagen / video acá
+    </div>
+    <figcaption>Descripción del video.</figcaption>
+  </figure>
+</div>
+
 
 <section id="experiencia">
   <div class="wrap">
@@ -311,6 +432,92 @@
     <p>Ezpeleta, Buenos Aires, Argentina</p>
   </div>
 </footer>
+
+<script>
+(function(){
+  const shell   = document.getElementById('shell');
+  const gallery = document.getElementById('gallery');
+  const cards   = document.querySelectorAll('.project');
+  let current   = null;
+
+  function build(key){
+    const src = document.querySelector('.gallery-source[data-gallery="' + key + '"]');
+    if(!src) return;
+
+    gallery.innerHTML = '';
+
+    const head = document.createElement('div');
+    head.className = 'gallery-head';
+
+    const title = document.createElement('h3');
+    title.textContent = src.dataset.title || '';
+
+    const right = document.createElement('div');
+    if(src.dataset.repo){
+      const repo = document.createElement('a');
+      repo.className = 'repo';
+      repo.href = src.dataset.repo;
+      repo.target = '_blank';
+      repo.rel = 'noopener';
+      repo.textContent = 'Ver repositorio →';
+      right.appendChild(repo);
+    }
+    const close = document.createElement('button');
+    close.className = 'gallery-close';
+    close.type = 'button';
+    close.textContent = 'cerrar';
+    close.addEventListener('click', closeGallery);
+    right.appendChild(close);
+
+    head.appendChild(title);
+    head.appendChild(right);
+    gallery.appendChild(head);
+
+    const items = document.createElement('div');
+    items.className = 'gallery-items';
+    src.querySelectorAll('figure').forEach(function(fig){
+      items.appendChild(fig.cloneNode(true));
+    });
+    gallery.appendChild(items);
+  }
+
+  function openGallery(card){
+    const key = card.dataset.project;
+    if(current === key){ closeGallery(); return; }
+    current = key;
+    build(key);
+    shell.classList.add('open');
+    cards.forEach(c => c.classList.toggle('active', c === card));
+  }
+
+  function closeGallery(){
+    current = null;
+    shell.classList.remove('open');
+    cards.forEach(c => c.classList.remove('active'));
+    gallery.querySelectorAll('video').forEach(v => v.pause());
+    setTimeout(function(){
+      if(!shell.classList.contains('open')) gallery.innerHTML = '';
+    }, 450);
+  }
+
+  cards.forEach(function(card){
+    card.addEventListener('click', function(e){
+      if(e.target.closest('a')) return;   // los links siguen funcionando normal
+      openGallery(card);
+    });
+    card.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        openGallery(card);
+      }
+    });
+  });
+
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && current) closeGallery();
+  });
+})();
+</script>
 
 </body>
 </html>
