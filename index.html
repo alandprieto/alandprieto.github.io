@@ -36,8 +36,6 @@
   :focus-visible{ outline: 2px solid var(--accent); outline-offset: 3px; }
 
   .wrap{ max-width: 760px; margin: 0 auto; padding: 0 24px; }
-  /* La sección de proyectos necesita más ancho para la galería */
-  .wrap-wide{ max-width: 1140px; margin: 0 auto; padding: 0 24px; }
 
   nav{ border-bottom: 1px solid var(--line); padding: 18px 0; }
   nav .wrap{ display:flex; justify-content: space-between; align-items:center; }
@@ -76,8 +74,16 @@
     transition: grid-template-columns .45s ease, gap .45s ease;
   }
   .shell.open{
-    grid-template-columns: 300px 1fr;
-    gap: 34px;
+    grid-template-columns: 260px 1fr;
+    gap: 30px;
+  }
+  /* Al abrir la galería, la sección se ensancha desde el centro
+     para darle lugar; colapsada queda alineada con el resto */
+  .wrap-proyectos{
+    transition: max-width .45s ease;
+  }
+  .wrap-proyectos.expanded{
+    max-width: 1140px;
   }
 
   .project-list{ min-width: 0; }
@@ -241,7 +247,7 @@
 </section>
 
 <section id="proyectos">
-  <div class="wrap-wide">
+  <div class="wrap wrap-proyectos" id="wrapProyectos">
     <h2><span class="idx">02.</span> proyectos</h2>
 
     <div class="shell" id="shell">
@@ -436,6 +442,7 @@
 <script>
 (function(){
   const shell   = document.getElementById('shell');
+  const wrapPro = document.getElementById('wrapProyectos');
   const gallery = document.getElementById('gallery');
   const cards   = document.querySelectorAll('.project');
   let current   = null;
@@ -487,12 +494,14 @@
     current = key;
     build(key);
     shell.classList.add('open');
+    wrapPro.classList.add('expanded');
     cards.forEach(c => c.classList.toggle('active', c === card));
   }
 
   function closeGallery(){
     current = null;
     shell.classList.remove('open');
+    wrapPro.classList.remove('expanded');
     cards.forEach(c => c.classList.remove('active'));
     gallery.querySelectorAll('video').forEach(v => v.pause());
     setTimeout(function(){
